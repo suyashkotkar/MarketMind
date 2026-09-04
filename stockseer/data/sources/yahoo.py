@@ -80,7 +80,7 @@ class YahooNewsSource(NewsSource):
         for it in items[:limit]:
             content = it.get("content", it)
             ts = content.get("pubDate") or it.get("providerPublishTime")
-            if isinstance(ts, (int, float)):
+            if isinstance(ts, int | float):
                 published = dt.datetime.fromtimestamp(ts, tz=dt.UTC)
             elif isinstance(ts, str):
                 published = pd.to_datetime(ts, utc=True, errors="coerce").to_pydatetime()
