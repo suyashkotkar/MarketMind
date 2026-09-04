@@ -1,4 +1,4 @@
-# StockSeer
+# MarketMind
 
 An end-to-end stock analysis system that answers **"how likely is this to go up, and how much can it hurt me?"** instead of pretending to know tomorrow's closing price.
 
