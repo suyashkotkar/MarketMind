@@ -1,0 +1,73 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-stockseer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stockseer}
+      POSTGRES_DB: ${POSTGRES_DB:-stockseer}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stockseer}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-stockseer}:${POSTGRES_PASSWORD:-stockseer}@db:5432/${POSTGRES_DB:-stockseer}
+      ENV: ${ENV:-development}
+      DATA_SOURCE: ${DATA_SOURCE:-yahoo}
+      NEWS_SOURCE: ${NEWS_SOURCE:-auto}
+      NEWSAPI_KEY: ${NEWSAPI_KEY:-}
+      FINNHUB_KEY: ${FINNHUB_KEY:-}
+      DEFAULT_TICKERS: ${DEFAULT_TICKERS:-AAPL,MSFT,GOOGL,AMZN,NVDA,META,TSLA,JPM,XOM,JNJ}
+      HORIZON_DAYS: ${HORIZON_DAYS:-5}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+    volumes:
+      - artifacts:/data/artifacts
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # One-shot: ingest the universe and train. `docker compose run --rm etl`
+  # re-runs it; a scheduler (cron, Render job, GitHub Action) calls the same
+  # command in production.
+  etl:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-stockseer}:${POSTGRES_PASSWORD:-stockseer}@db:5432/${POSTGRES_DB:-stockseer}
+      DATA_SOURCE: ${DATA_SOURCE:-yahoo}
+      NEWS_SOURCE: ${NEWS_SOURCE:-auto}
+      NEWSAPI_KEY: ${NEWSAPI_KEY:-}
+      FINNHUB_KEY: ${FINNHUB_KEY:-}
+      DEFAULT_TICKERS: ${DEFAULT_TICKERS:-AAPL,MSFT,GOOGL,AMZN,NVDA,META,TSLA,JPM,XOM,JNJ}
+    volumes:
+      - artifacts:/data/artifacts
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "stockseer.cli", "pipeline"]
+    profiles: ["jobs"]
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  artifacts:

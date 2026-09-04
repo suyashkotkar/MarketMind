@@ -1,0 +1,274 @@
+/* ---------------------------------------------------------------------------
+   Design tokens. Light is the base definition; dark is a *selected* set of
+   steps from the same ramps, declared under both the OS media query and the
+   explicit [data-theme] scope so the in-app toggle wins in both directions.
+   --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+
+  --surface-1: #fcfcfb;          /* card / chart surface */
+  --page: #f9f9f7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --shadow: 0 1px 2px rgba(11, 11, 11, 0.05);
+
+  /* categorical slots — fixed order, never cycled */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+
+  /* sequential (blue) */
+  --seq-100: #cde2fb;
+  --seq-250: #86b6ef;
+  --seq-400: #3987e5;
+  --seq-550: #1c5cab;
+  --seq-700: #0d366b;
+
+  /* diverging blue <-> red, neutral gray midpoint */
+  --div-neg: #2a78d6;
+  --div-mid: #f0efec;
+  --div-pos: #d03b3b;
+
+  /* status — reserved, never used as a series */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --delta-up: #006300;
+  --delta-down: #d03b3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --page: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --shadow: none;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --div-mid: #383835;
+    --delta-up: #0ca30c;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface-1: #1a1a19;
+  --page: #0d0d0d;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.10);
+  --shadow: none;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --div-mid: #383835;
+  --delta-up: #0ca30c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text-primary);
+  font: 14px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--series-1); }
+
+/* --- layout --- */
+.app { max-width: 1360px; margin: 0 auto; padding: 0 20px 56px; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 14px 20px; margin: 0 -20px 0;
+  background: var(--page); border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand h1 { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
+.brand span { color: var(--text-muted); font-size: 12px; }
+
+.nav { display: flex; gap: 4px; margin-left: 8px; }
+.nav button {
+  background: none; border: 1px solid transparent; border-radius: 7px;
+  padding: 6px 12px; font: inherit; color: var(--text-secondary); cursor: pointer;
+}
+.nav button:hover { background: var(--surface-1); }
+.nav button[aria-current='page'] {
+  background: var(--surface-1); border-color: var(--border);
+  color: var(--text-primary); font-weight: 600;
+}
+
+.spacer { flex: 1; }
+
+/* One filter row above everything it scopes. */
+.filterbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 0 18px;
+}
+.field { display: flex; align-items: center; gap: 6px; }
+.field label { color: var(--text-muted); font-size: 12px; }
+
+select, input, button.btn {
+  font: inherit; color: var(--text-primary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px;
+  min-height: 34px;
+}
+button.btn { cursor: pointer; }
+button.btn:hover { border-color: var(--axis); }
+button.btn.primary {
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.seg button {
+  background: var(--surface-1); border: 0; border-right: 1px solid var(--border);
+  padding: 7px 11px; font: inherit; color: var(--text-secondary); cursor: pointer;
+  min-height: 34px;
+}
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed='true'] { background: var(--seq-100); color: var(--text-primary); font-weight: 600; }
+:root[data-theme='dark'] .seg button[aria-pressed='true'],
+:root:where(:not([data-theme='light'])) .seg button[aria-pressed='true'] { background: #14355e; }
+
+/* --- cards --- */
+.grid { display: grid; gap: 16px; }
+.grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+.grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+
+.card {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px 18px; box-shadow: var(--shadow);
+  min-width: 0;
+}
+.card > header {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;
+}
+.card h2 { font-size: 14px; margin: 0; font-weight: 600; }
+.card .sub { color: var(--text-muted); font-size: 12px; margin: 2px 0 14px; }
+.card .toolbar { margin-left: auto; display: flex; gap: 6px; }
+.linkish {
+  background: none; border: 0; color: var(--text-secondary); font: inherit;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+  padding: 2px 4px;
+}
+
+/* --- stat tiles: the number IS the chart --- */
+.tile .label { color: var(--text-muted); font-size: 12px; text-transform: none; }
+.tile .value { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.15; margin-top: 2px; }
+.tile .value.sm { font-size: 22px; }
+.tile .meta { color: var(--text-secondary); font-size: 12px; margin-top: 4px; }
+.delta-up { color: var(--delta-up); }
+.delta-down { color: var(--delta-down); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 600;
+  border: 1px solid var(--border); color: var(--text-primary);
+  background: var(--surface-1);
+}
+.badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Probability bar — a single number given room, not a gauge. */
+.probbar { margin-top: 10px; }
+.probbar .track {
+  position: relative; height: 10px; border-radius: 5px;
+  background: linear-gradient(90deg, var(--div-neg), var(--div-mid) 50%, var(--div-pos));
+  opacity: 0.30;
+}
+.probbar .wrap { position: relative; }
+.probbar .marker {
+  position: absolute; top: -5px; width: 4px; height: 20px; border-radius: 2px;
+  background: var(--text-primary); box-shadow: 0 0 0 2px var(--surface-1);
+}
+.probbar .thresh {
+  position: absolute; top: -2px; width: 1px; height: 14px; background: var(--axis);
+}
+.probbar .scale {
+  display: flex; justify-content: space-between; color: var(--text-muted);
+  font-size: 11px; margin-top: 8px; font-variant-numeric: tabular-nums;
+}
+
+/* --- tables (the accessible twin of every chart) --- */
+table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.data th, table.data td {
+  text-align: right; padding: 7px 9px; border-bottom: 1px solid var(--grid);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+table.data th:first-child, table.data td:first-child { text-align: left; font-variant-numeric: normal; }
+table.data th { color: var(--text-muted); font-weight: 600; font-size: 12px; }
+/* Long prose cells wrap instead of being clipped by the horizontal scroll. */
+table.data td.wrap, table.data th.wrap {
+  white-space: normal; min-width: 220px; max-width: 380px; text-align: left;
+}
+table.data tbody tr:hover { background: var(--page); }
+.scroll-x { overflow-x: auto; }
+
+/* --- lists --- */
+.list { list-style: none; margin: 0; padding: 0; }
+.list li {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--grid);
+}
+.list li:last-child { border-bottom: 0; }
+.list .when { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+.icon { flex: 0 0 auto; width: 16px; height: 16px; margin-top: 2px; }
+
+.muted { color: var(--text-muted); }
+.err {
+  border: 1px solid var(--status-critical); border-radius: 10px;
+  padding: 12px 14px; color: var(--text-primary); background: var(--surface-1);
+}
+.loading { color: var(--text-muted); padding: 22px 0; }
+.stale { opacity: 0.55; transition: opacity 120ms ease; }
+
+.chart-wrap { width: 100%; }
+.footnote { color: var(--text-muted); font-size: 12px; margin-top: 12px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 4px 10px; background: var(--surface-1); cursor: pointer;
+  font: inherit; color: var(--text-secondary); min-height: 28px;
+}
+.chip[aria-pressed='true'] { color: var(--text-primary); border-color: var(--axis); font-weight: 600; }
+.chip .swatch { width: 10px; height: 10px; border-radius: 3px; }
+
+@media (max-width: 640px) {
+  .topbar { gap: 8px; }
+  .card { padding: 14px; }
+}

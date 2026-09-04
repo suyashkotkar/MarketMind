@@ -1,0 +1,41 @@
+name: Daily data refresh
+
+# Markets close at 21:00 UTC; run afterwards so the day's bar is final.
+on:
+  schedule:
+    - cron: "30 22 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+      FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
+      DATA_SOURCE: yahoo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      # Incremental: a short period is enough once history is loaded, and the
+      # upsert makes re-running harmless.
+      - name: Ingest latest bars and headlines
+        run: python -m stockseer.cli ingest --period 6mo
+
+      # Retrain weekly rather than daily — a five-day-horizon model does not
+      # meaningfully change from one session's data.
+      - name: Retrain (Fridays, or on demand)
+        run: |
+          if [ "$(date -u +%u)" = "5" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python -m stockseer.cli train
+          else
+            echo "Not Friday — skipping the retrain."
+          fi
+
+      - name: Refresh predictions
+        run: python -m stockseer.cli predict
