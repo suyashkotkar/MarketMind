@@ -10,7 +10,7 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: sqllite:///./artifacts/stockseer.db
       NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
       FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
       DATA_SOURCE: yahoo
