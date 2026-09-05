@@ -40,7 +40,7 @@ jobs:
 
       - run: pip install -r requirements-dev.txt
 
-      - run: pip install -e
+      - run: pip install -e .
 
       - name: Lint
         run: ruff check stockseer tests
